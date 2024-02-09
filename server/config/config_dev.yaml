@@ -1,0 +1,7 @@
+flamingo.debug.mode: true
+
+core:
+  zap:
+    loglevel: Debug
+    colored: true
+    json: false

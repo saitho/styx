@@ -1,0 +1,41 @@
+@import "@picocss/pico/scss/pico"
+
+main > aside
+    flex-grow: 1
+    h1
+        --font-size: 1.2rem
+    h2
+        --font-size: 1rem
+        margin-bottom: 1rem
+        padding-bottom: 0.5rem
+        border-bottom: var(--border-width) solid var(--accordion-border-color)
+    nav
+        --accordion-close-summary-color: var(--primary)
+        details.dropdown
+            border-bottom: none
+            ul
+                margin-left: var(--nav-element-spacing-horizontal)
+
+.wrapper
+    font-family: 'Roboto', sans-serif
+
+main
+    display: flex
+    flex-direction: row
+    justify-content: space-between
+
+.content
+    width: 80%
+    padding: 1rem
+
+aside
+    padding: 1rem
+
+main
+    padding: 1rem
+
+a
+    text-decoration: none
+
+a:hover
+    text-decoration: underline

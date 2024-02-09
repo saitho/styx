@@ -1,0 +1,8 @@
+html
+  body
+    h1.center 404
+
+    if config('debug.mode')
+      .errorDebug
+        .errorDebugTitle Debug:
+        pre.errorDebugContent.center= error

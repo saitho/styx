@@ -1,0 +1,31 @@
+doctype
+html
+    head
+        meta(charset='utf-8')
+        title Project Styx
+        block stylesheets
+            link(rel="stylesheet", href=asset("css/main.css"))
+        block scripts
+        script(src=asset("js/main.js"))
+    body
+        .wrapper
+            main(class="container-fluid")
+                aside
+                    h1 Project Styx <small>(<a href="#{url("modules.index")}">Manage</a>)</small>
+                    h2 Modules
+                    block moduleNavigation
+                        nav
+                            p TBD
+                            //ul
+                            //    li
+                            //        a(href="#") Services
+                            //    li
+                            //        details(class="dropdown")
+                            //            summary Account
+                            //            ul(dir="rtl")
+                            //                li
+                            //                    a(href="#") Test 1
+                            //                    a(href="#") Test 2
+                            //                    a(href="#") Test 3
+                div(class="content")
+                    block content

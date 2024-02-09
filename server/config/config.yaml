@@ -1,0 +1,10 @@
+flamingo.debug.mode: false
+
+styx:
+  modules: '%%ENV:STYX_MODULES%%'
+
+core:
+  zap:
+    loglevel: Debug
+    colored: true
+    json: false

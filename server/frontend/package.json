@@ -1,0 +1,17 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@picocss/pico": "^1.5.11",
+    "flamingo-carotene-core": "^9.0.0-alpha.13",
+    "flamingo-carotene-pug": "^9.0.0-alpha.13",
+    "flamingo-carotene-webpack": "^9.0.0-alpha.13"
+  }
+}
