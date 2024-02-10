@@ -2,11 +2,10 @@ package api
 
 import (
 	"context"
+	"saitho.me/styx-app/src/service"
 
 	"flamingo.me/dingo"
 	"flamingo.me/flamingo/v3/framework/web"
-
-	"saitho.me/styx-app/src/lib"
 )
 
 type Module struct{}
@@ -20,14 +19,14 @@ func (m *Module) Configure(injector *dingo.Injector) {
 // routes struct - our internal struct that gets the interface methods for router.Module
 type routes struct {
 	// controller - we will defined routes that are handled by our HelloController - so we need this as a dependency
-	controller *ApiController
-	config     *lib.Config
+	controller     *ApiController
+	serviceManager *service.ServiceManager
 }
 
 // Inject dependencies - this is called by Dingo and gets an initializes instance of the HelloController passed automatically
-func (r *routes) Inject(controller *ApiController, config *lib.Config) *routes {
+func (r *routes) Inject(controller *ApiController, serviceManager *service.ServiceManager) *routes {
 	r.controller = controller
-	r.config = config
+	r.serviceManager = serviceManager
 	return r
 }
 
@@ -36,7 +35,7 @@ func (r *routes) Routes(registry *web.RouterRegistry) {
 	registry.MustRoute("/api", "api.index")
 	registry.HandleGet("api.index", r.controller.Index)
 
-	registry.HandleData("config", func(ctx context.Context, req *web.Request, callParams web.RequestParams) interface{} {
-		return r.config
+	registry.HandleData("serviceManager", func(ctx context.Context, req *web.Request, callParams web.RequestParams) interface{} {
+		return r.serviceManager
 	})
 }

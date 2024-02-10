@@ -2,33 +2,32 @@ package api
 
 import (
 	"context"
+	"saitho.me/styx-app/src/service"
 
 	"flamingo.me/flamingo/v3/framework/web"
-
-	"saitho.me/styx-app/src/lib"
 )
 
 type (
 	ApiController struct {
-		responder *web.Responder
-		cfg       *lib.Config
+		responder      *web.Responder
+		serviceManager *service.ServiceManager
 	}
 
 	apiViewData struct {
-		Services map[string]*lib.StyxService
+		Services map[string]*service.StyxService
 	}
 )
 
 // Inject dependencies
-func (controller *ApiController) Inject(responder *web.Responder, config *lib.Config) *ApiController {
+func (controller *ApiController) Inject(responder *web.Responder, serviceManager *service.ServiceManager) *ApiController {
 	controller.responder = responder
-	controller.cfg = config
+	controller.serviceManager = serviceManager
 	return controller
 }
 
 // Index is a controller action that renders Data
 func (controller *ApiController) Index(_ context.Context, r *web.Request) web.Result {
 	return controller.responder.Data(apiViewData{
-		Services: controller.cfg.Services,
+		Services: controller.serviceManager.Services,
 	})
 }

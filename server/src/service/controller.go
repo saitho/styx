@@ -7,21 +7,19 @@ import (
 	"slices"
 
 	"flamingo.me/flamingo/v3/framework/web"
-
-	"saitho.me/styx-app/src/lib"
 )
 
 type (
 	Controller struct {
-		responder *web.Responder
-		cfg       *lib.Config
+		responder      *web.Responder
+		serviceManager *ServiceManager
 	}
 )
 
 // Inject dependencies
-func (controller *Controller) Inject(responder *web.Responder, config *lib.Config) *Controller {
+func (controller *Controller) Inject(responder *web.Responder, serviceManager *ServiceManager) *Controller {
 	controller.responder = responder
-	controller.cfg = config
+	controller.serviceManager = serviceManager
 	return controller
 }
 
@@ -36,7 +34,7 @@ func (controller *Controller) Service(_ context.Context, r *web.Request) web.Res
 	if serviceName == "" {
 		return controller.responder.Forbidden(fmt.Errorf("missing service name"))
 	}
-	if !slices.Contains(maps.Keys(controller.cfg.Services), serviceName) {
+	if !slices.Contains(maps.Keys(controller.serviceManager.Services), serviceName) {
 		return controller.responder.Forbidden(fmt.Errorf("service \"%s\" not found", serviceName))
 	}
 	return controller.responder.Render("service_details", nil)

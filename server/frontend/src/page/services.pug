@@ -4,6 +4,8 @@ block content
     h2 Services
     h3 Configured services
     ul
-        each s in data("config").services
-            li(data-service-name=s.serviceName) #{s.serviceName} – Status: #{s.lastStatusReadable} (#{s.lastStatusDate})
+        each s in data("serviceManager").services
+            li(data-service-name=s.serviceName) #{s.serviceName}
+                span(title=s.lastStatusDate)  | Status: #{s.lastStatusReadable}
+                span(title=s.lastRpcStatusDate)  | Status RPC: #{s.lastRpcStatusReadable}
                 a(role="button") Refresh TBD

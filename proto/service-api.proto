@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-option go_package = "saitho.me/styx-app/rpc";
+option go_package = "saitho.me/styx-app/proto";
 option java_multiple_files = true;
-option java_package = "me.saitho.styx-app.rpc";
+option java_package = "me.saitho.styx-app.proto";
 option java_outer_classname = "EventsProto";
 
-package helloworld;
+package styxapp;
 
 message Event {
   string Name = 1;
@@ -23,4 +23,8 @@ service EventService {
   rpc Emit(Event) returns (Empty) {}
   rpc Subscribe(SubscribeEvent) returns (Empty) {}
   rpc Unsubscribe(SubscribeEvent) returns (Empty) {}
+}
+
+service ServiceProvider {
+  rpc Ping(Empty) returns (Empty) {}
 }

@@ -3,6 +3,8 @@
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
+    "@grpc/grpc-js": "^1.10.0",
+    "@grpc/proto-loader": "^0.7.10",
     "bun-types": "latest"
   },
   "peerDependencies": {

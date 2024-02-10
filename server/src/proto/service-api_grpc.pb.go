@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.12
-// source: src/rpc/events.proto
+// source: proto/service-api.proto
 
-package rpc
+package proto
 
 import (
 	context "context"
@@ -37,7 +37,7 @@ func NewEventServiceClient(cc grpc.ClientConnInterface) EventServiceClient {
 
 func (c *eventServiceClient) Emit(ctx context.Context, in *Event, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/helloworld.EventService/Emit", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/styxapp.EventService/Emit", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *eventServiceClient) Emit(ctx context.Context, in *Event, opts ...grpc.C
 
 func (c *eventServiceClient) Subscribe(ctx context.Context, in *SubscribeEvent, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/helloworld.EventService/Subscribe", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/styxapp.EventService/Subscribe", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (c *eventServiceClient) Subscribe(ctx context.Context, in *SubscribeEvent, 
 
 func (c *eventServiceClient) Unsubscribe(ctx context.Context, in *SubscribeEvent, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/helloworld.EventService/Unsubscribe", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/styxapp.EventService/Unsubscribe", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func _EventService_Emit_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/helloworld.EventService/Emit",
+		FullMethod: "/styxapp.EventService/Emit",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventServiceServer).Emit(ctx, req.(*Event))
@@ -126,7 +126,7 @@ func _EventService_Subscribe_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/helloworld.EventService/Subscribe",
+		FullMethod: "/styxapp.EventService/Subscribe",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventServiceServer).Subscribe(ctx, req.(*SubscribeEvent))
@@ -144,7 +144,7 @@ func _EventService_Unsubscribe_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/helloworld.EventService/Unsubscribe",
+		FullMethod: "/styxapp.EventService/Unsubscribe",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventServiceServer).Unsubscribe(ctx, req.(*SubscribeEvent))
@@ -156,7 +156,7 @@ func _EventService_Unsubscribe_Handler(srv interface{}, ctx context.Context, dec
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EventService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "helloworld.EventService",
+	ServiceName: "styxapp.EventService",
 	HandlerType: (*EventServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -173,5 +173,91 @@ var EventService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "src/rpc/events.proto",
+	Metadata: "proto/service-api.proto",
+}
+
+// ServiceProviderClient is the client API for ServiceProvider service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type ServiceProviderClient interface {
+	Ping(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+}
+
+type serviceProviderClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewServiceProviderClient(cc grpc.ClientConnInterface) ServiceProviderClient {
+	return &serviceProviderClient{cc}
+}
+
+func (c *serviceProviderClient) Ping(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/styxapp.ServiceProvider/Ping", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ServiceProviderServer is the server API for ServiceProvider service.
+// All implementations must embed UnimplementedServiceProviderServer
+// for forward compatibility
+type ServiceProviderServer interface {
+	Ping(context.Context, *Empty) (*Empty, error)
+	mustEmbedUnimplementedServiceProviderServer()
+}
+
+// UnimplementedServiceProviderServer must be embedded to have forward compatible implementations.
+type UnimplementedServiceProviderServer struct {
+}
+
+func (UnimplementedServiceProviderServer) Ping(context.Context, *Empty) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
+func (UnimplementedServiceProviderServer) mustEmbedUnimplementedServiceProviderServer() {}
+
+// UnsafeServiceProviderServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ServiceProviderServer will
+// result in compilation errors.
+type UnsafeServiceProviderServer interface {
+	mustEmbedUnimplementedServiceProviderServer()
+}
+
+func RegisterServiceProviderServer(s grpc.ServiceRegistrar, srv ServiceProviderServer) {
+	s.RegisterService(&ServiceProvider_ServiceDesc, srv)
+}
+
+func _ServiceProvider_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceProviderServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/styxapp.ServiceProvider/Ping",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceProviderServer).Ping(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// ServiceProvider_ServiceDesc is the grpc.ServiceDesc for ServiceProvider service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ServiceProvider_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "styxapp.ServiceProvider",
+	HandlerType: (*ServiceProviderServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Ping",
+			Handler:    _ServiceProvider_Ping_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/service-api.proto",
 }
