@@ -7,9 +7,11 @@ import (
 	"flamingo.me/flamingo/v3/core/zap"
 	"flamingo.me/opentelemetry"
 	"flamingo.me/pugtemplate"
+	"saitho.me/styx-app/src/lib"
 
 	"saitho.me/styx-app/src/api"
 	"saitho.me/styx-app/src/module"
+	"saitho.me/styx-app/src/rpc"
 )
 
 // main is our entry point
@@ -21,7 +23,9 @@ func main() {
 		// log formatter
 		new(requestlogger.Module), // request logger show request logs
 		new(pugtemplate.Module),
+		new(lib.ConfigModule),
 		new(module.Module),
 		new(api.Module),
+		new(rpc.Module),
 	})
 }

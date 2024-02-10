@@ -15,7 +15,7 @@ type (
 	}
 
 	apiViewData struct {
-		Modules map[string]lib.StyxModule
+		Modules map[string]*lib.StyxModule
 	}
 )
 

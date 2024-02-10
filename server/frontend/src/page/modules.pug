@@ -1,8 +1,9 @@
 extends src/page/layout.pug
 
 block content
-    h2 Modules
-    h3 Configured modules
+    h2 Services
+    h3 Configured services
     ul
         each module in data("config").modules
-            li #{module.serviceName} – Status: #{module.statusText()}
+            li(data-service-name=module.serviceName) #{module.serviceName} – Status: #{module.lastStatusReadable} (#{module.lastStatusDate})
+                a(role="button") Refresh TBD
