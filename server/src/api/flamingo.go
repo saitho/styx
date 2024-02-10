@@ -13,7 +13,7 @@ type Module struct{}
 
 // Configure is the default Method a Module needs to implement
 func (m *Module) Configure(injector *dingo.Injector) {
-	// register our routes struct as a router Module - so that it is "known" to the router module
+	// register our routes struct as a router Module - so that it is "known" to the router service
 	web.BindRoutes(injector, new(routes))
 }
 
@@ -31,7 +31,7 @@ func (r *routes) Inject(controller *ApiController, config *lib.Config) *routes {
 	return r
 }
 
-// Routes method which defines all routes handlers in module
+// Routes method which defines all routes handlers in service
 func (r *routes) Routes(registry *web.RouterRegistry) {
 	registry.MustRoute("/api", "api.index")
 	registry.HandleGet("api.index", r.controller.Index)

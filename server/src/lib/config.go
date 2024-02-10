@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	Modules map[string]*StyxModule
+	Services map[string]*StyxService
 }
 
 type ConfigModule struct {
@@ -18,21 +18,21 @@ type ConfigModule struct {
 
 func GetConfig(
 	logger flamingo.Logger,
-	eventManager *ModuleEventManager,
+	eventManager *ServiceEventManager,
 	cfg *struct {
 		CompleteConfig config.Map `inject:"config:styx"`
 	},
 ) *Config {
 	c := &Config{}
-	c.Modules = map[string]*StyxModule{}
-	if moduleString, ok := cfg.CompleteConfig.Get("modules"); moduleString != "" && ok {
-		for _, moduleName := range strings.Split(moduleString.(string), ",") {
-			module := &StyxModule{ServiceName: moduleName}
-			module.Inject(logger, eventManager)
-			if err := module.Init(); err != nil {
+	c.Services = map[string]*StyxService{}
+	if serviceString, ok := cfg.CompleteConfig.Get("services"); serviceString != "" && ok {
+		for _, serviceName := range strings.Split(serviceString.(string), ",") {
+			service := &StyxService{ServiceName: serviceName}
+			service.Inject(logger, eventManager)
+			if err := service.Init(); err != nil {
 				logger.Error(err)
 			}
-			c.Modules[moduleName] = module
+			c.Services[serviceName] = service
 		}
 	}
 	return c

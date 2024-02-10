@@ -22,12 +22,12 @@ type Module struct {
 	logger        flamingo.Logger
 	config        *lib.Config
 	grpcConfig    config.Map
-	eventManager  *lib.ModuleEventManager
+	eventManager  *lib.ServiceEventManager
 }
 
 func (m *Module) Inject(
 	logger flamingo.Logger,
-	eventManager *lib.ModuleEventManager,
+	eventManager *lib.ServiceEventManager,
 	config *lib.Config,
 	cfg *struct {
 		GrpcConfig config.Map `inject:"config:styx.grpc"`

@@ -10,8 +10,8 @@ import (
 	"saitho.me/styx-app/src/lib"
 
 	"saitho.me/styx-app/src/api"
-	"saitho.me/styx-app/src/module"
 	"saitho.me/styx-app/src/rpc"
+	"saitho.me/styx-app/src/service"
 )
 
 // main is our entry point
@@ -24,7 +24,7 @@ func main() {
 		new(requestlogger.Module), // request logger show request logs
 		new(pugtemplate.Module),
 		new(lib.ConfigModule),
-		new(module.Module),
+		new(service.Module),
 		new(api.Module),
 		new(rpc.Module),
 	})

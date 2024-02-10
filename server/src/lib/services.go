@@ -9,27 +9,27 @@ import (
 	"flamingo.me/flamingo/v3/framework/flamingo"
 )
 
-type ModuleStatus int
+type ServiceStatus int
 
-const ( // iota is reset to 0
-	MODULESTATUS_UNKNOWN         ModuleStatus = iota // c0 == 0
-	MODULESTATUS_HTTP_ERROR                   = iota // c1 == 1
-	MODULESTATUS_READY                        = iota // c2 == 2
-	MODULESTATUS_INVALIDRESPONSE              = iota // c2 == 2
+const (
+	ServiceStatusUnknown         ServiceStatus = iota
+	ServiceStatusHttpError                     = iota
+	ServiceStatusReady                         = iota
+	ServiceStatusInvalidResponse               = iota
 )
 
-type StyxModule struct {
+type StyxService struct {
 	ServiceName string
 
-	LastStatus         ModuleStatus
+	LastStatus         ServiceStatus
 	LastStatusReadable string
 	LastStatusDate     time.Time
 
-	eventManager *ModuleEventManager
+	eventManager *ServiceEventManager
 	logger       flamingo.Logger
 }
 
-func (m *StyxModule) Inject(logger flamingo.Logger, eventManager *ModuleEventManager) {
+func (m *StyxService) Inject(logger flamingo.Logger, eventManager *ServiceEventManager) {
 	m.eventManager = eventManager
 	m.logger = logger
 }
@@ -42,32 +42,32 @@ type InitResponse struct {
 	SubscribedEvents []string
 }
 
-func StatusText(status ModuleStatus) string {
+func StatusText(status ServiceStatus) string {
 	switch status {
-	case MODULESTATUS_UNKNOWN:
+	case ServiceStatusUnknown:
 		return "unknown"
-	case MODULESTATUS_HTTP_ERROR:
+	case ServiceStatusHttpError:
 		return "HTTP Error"
-	case MODULESTATUS_INVALIDRESPONSE:
+	case ServiceStatusInvalidResponse:
 		return "Invalid Response"
-	case MODULESTATUS_READY:
+	case ServiceStatusReady:
 		return "ready"
 	}
 	return "???"
 }
 
-func (m *StyxModule) Init() error {
+func (m *StyxService) Init() error {
 	m.logger.Info("Initializing service \"" + m.ServiceName + "\"")
 	resp, err := http.Get("http://" + m.ServiceName + ":8844/_styx/init")
 	if err != nil {
-		m.updateStatus(MODULESTATUS_HTTP_ERROR)
+		m.updateStatus(ServiceStatusHttpError)
 		return fmt.Errorf("unable to connect to service init endpoint")
 	}
 	defer resp.Body.Close()
 
 	target := &InitResponse{}
 	if err = json.NewDecoder(resp.Body).Decode(target); err != nil {
-		m.updateStatus(MODULESTATUS_INVALIDRESPONSE)
+		m.updateStatus(ServiceStatusInvalidResponse)
 		return fmt.Errorf("unable to decode init response from init endpoint")
 	}
 
@@ -82,28 +82,28 @@ func (m *StyxModule) Init() error {
 	return nil
 }
 
-func (m *StyxModule) updateStatus(status ModuleStatus) {
+func (m *StyxService) updateStatus(status ServiceStatus) {
 	m.LastStatusDate = time.Now()
 	m.LastStatus = status
 	m.LastStatusReadable = StatusText(status)
 }
 
-func (m *StyxModule) Status() ModuleStatus {
+func (m *StyxService) Status() ServiceStatus {
 	if m.LastStatusDate.Compare(time.Now().Add(time.Minute*-15)) == -1 {
 		m.logger.Debugf("Getting status for service " + m.ServiceName)
 		resp, err := http.Get("http://" + m.ServiceName + ":8844/_styx/status")
 		if err != nil {
-			m.updateStatus(MODULESTATUS_HTTP_ERROR)
+			m.updateStatus(ServiceStatusHttpError)
 		} else {
 			defer resp.Body.Close()
 
 			target := &StatusResponse{}
 			if err = json.NewDecoder(resp.Body).Decode(target); err != nil {
-				m.updateStatus(MODULESTATUS_INVALIDRESPONSE)
+				m.updateStatus(ServiceStatusInvalidResponse)
 			} else if target.Status == "ready" {
-				m.updateStatus(MODULESTATUS_READY)
+				m.updateStatus(ServiceStatusReady)
 			} else {
-				m.updateStatus(MODULESTATUS_UNKNOWN)
+				m.updateStatus(ServiceStatusUnknown)
 			}
 		}
 	}

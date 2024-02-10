@@ -15,7 +15,7 @@ type (
 	}
 
 	apiViewData struct {
-		Modules map[string]*lib.StyxModule
+		Services map[string]*lib.StyxService
 	}
 )
 
@@ -29,6 +29,6 @@ func (controller *ApiController) Inject(responder *web.Responder, config *lib.Co
 // Index is a controller action that renders Data
 func (controller *ApiController) Index(_ context.Context, r *web.Request) web.Result {
 	return controller.responder.Data(apiViewData{
-		Modules: controller.cfg.Modules,
+		Services: controller.cfg.Services,
 	})
 }

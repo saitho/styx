@@ -1,0 +1,9 @@
+extends src/page/layout.pug
+
+block content
+    h2 Services
+    h3 Configured services
+    ul
+        each s in data("config").services
+            li(data-service-name=s.serviceName) #{s.serviceName} – Status: #{s.lastStatusReadable} (#{s.lastStatusDate})
+                a(role="button") Refresh TBD
