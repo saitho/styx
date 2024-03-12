@@ -1,14 +1,10 @@
 package service
 
 import (
-	"context"
 	"encoding/json"
 	"flamingo.me/flamingo/v3/framework/flamingo"
 	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
-	"saitho.me/styx-app/src/proto"
 	"time"
 )
 
@@ -19,20 +15,14 @@ const (
 	ServiceStatusHttpError                     = iota
 	ServiceStatusReady                         = iota
 	ServiceStatusInvalidResponse               = iota
-	ServiceStatusNoRpcConnection               = iota
-	ServiceStatusNoRpcResponse                 = iota
 )
 
 type StyxService struct {
 	ServiceName string
-	GrpcHost    string
 
-	LastStatus            ServiceStatus
-	LastStatusReadable    string
-	LastStatusDate        time.Time
-	LastRpcStatus         ServiceStatus
-	LastRpcStatusReadable string
-	LastRpcStatusDate     time.Time
+	LastStatus         ServiceStatus
+	LastStatusReadable string
+	LastStatusDate     time.Time
 
 	eventManager *ServiceEventManager
 	logger       flamingo.Logger
@@ -47,10 +37,6 @@ type StatusResponse struct {
 	Status string
 }
 
-type InitResponse struct {
-	SubscribedEvents []string
-}
-
 func StatusText(status ServiceStatus) string {
 	switch status {
 	case ServiceStatusUnknown:
@@ -61,10 +47,6 @@ func StatusText(status ServiceStatus) string {
 		return "Invalid Response"
 	case ServiceStatusReady:
 		return "ready"
-	case ServiceStatusNoRpcConnection:
-		return "No RPC Connection"
-	case ServiceStatusNoRpcResponse:
-		return "No RPC Response"
 	}
 	return "???"
 }
@@ -78,17 +60,6 @@ func (m *StyxService) Init() error {
 	}
 	defer resp.Body.Close()
 
-	target := &InitResponse{}
-	if err = json.NewDecoder(resp.Body).Decode(target); err != nil {
-		m.updateStatus(ServiceStatusInvalidResponse)
-		return fmt.Errorf("unable to decode init response from init endpoint")
-	}
-
-	for _, eventName := range target.SubscribedEvents {
-		// TODO: validate error
-		_ = m.eventManager.Subscribe(m.GrpcHost, eventName)
-	}
-
 	// Trigger status update
 	m.Status()
 
@@ -100,13 +71,6 @@ func (m *StyxService) updateStatus(status ServiceStatus) {
 	m.LastStatus = status
 	m.LastStatusReadable = StatusText(status)
 }
-
-func (m *StyxService) updateRpcStatus(status ServiceStatus) {
-	m.LastRpcStatusDate = time.Now()
-	m.LastRpcStatus = status
-	m.LastRpcStatusReadable = StatusText(status)
-}
-
 func (m *StyxService) Status() ServiceStatus {
 	if m.LastStatusDate.Compare(time.Now().Add(time.Minute*-15)) == -1 {
 		m.logger.Debugf("Getting status for service \"" + m.ServiceName + "\"")
@@ -123,21 +87,6 @@ func (m *StyxService) Status() ServiceStatus {
 				m.updateStatus(ServiceStatusReady)
 			} else {
 				m.updateStatus(ServiceStatusUnknown)
-			}
-		}
-
-		m.logger.Debugf("Getting RPC status for service \"" + m.ServiceName + "\"")
-		conn, err := grpc.Dial(m.GrpcHost, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			m.updateRpcStatus(ServiceStatusNoRpcConnection)
-		} else {
-			defer conn.Close()
-			// Contact the server and print out its response.
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-			defer cancel()
-			c := proto.NewServiceProviderClient(conn)
-			if _, err := c.Ping(ctx, &proto.Empty{}); err != nil {
-				m.updateRpcStatus(ServiceStatusNoRpcResponse)
 			}
 		}
 	}

@@ -23,6 +23,5 @@ func main() {
 		new(pugtemplate.Module),
 		new(service.Module),
 		new(api.Module),
-		new(service.RpcModule),
 	})
 }

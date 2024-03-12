@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"flamingo.me/flamingo/v3/framework/config"
-	"fmt"
 	"strings"
 
 	"flamingo.me/dingo"
@@ -30,15 +29,11 @@ func NewServiceManager(
 	m.Services = map[string]*StyxService{}
 	if serviceString, ok := cfg.CompleteConfig.Get("services"); serviceString != "" && ok {
 		for _, serviceName := range strings.Split(serviceString.(string), ",") {
-			rpcHostName := serviceName
 			if strings.Contains(serviceName, ":") {
 				// if service name contains port number, remove it from service name
 				serviceName = strings.Split(serviceName, ":")[0]
-			} else {
-				// Default port of port number not in service name
-				rpcHostName += fmt.Sprintf(":%d", eventManager.Config.Port)
 			}
-			service := &StyxService{ServiceName: serviceName, GrpcHost: rpcHostName}
+			service := &StyxService{ServiceName: serviceName}
 			service.Inject(logger, eventManager)
 			if err := service.Init(); err != nil {
 				logger.Error(err)
