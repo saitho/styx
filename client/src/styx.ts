@@ -1,6 +1,7 @@
 import {Elysia} from "elysia";
 import AwaitEventEmitter from "await-event-emitter"
 export const eventEmitter = new AwaitEventEmitter();
+export const STYX_PORT = 8844
 
 interface Config {
     subscribedEvents: string[];
