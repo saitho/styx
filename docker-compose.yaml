@@ -1,0 +1,21 @@
+---
+services:
+  frontend1:
+    build: client
+    labels:
+      - me.saitho.styx.port=8843
+  frontend2:
+    build: client
+    labels:
+      - me.saitho.styx.port=8844
+    environment:
+      PORT: 8844
+  backend:
+    build: server
+    ports:
+      - 3322:3322
+    depends_on:
+      - frontend1
+      - frontend2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

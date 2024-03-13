@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
+	"net"
+	"os"
 	"strconv"
 	"strings"
 
@@ -14,10 +16,56 @@ import (
 )
 
 type DockerClient struct {
-	api sdkClient.CommonAPIClient
 }
 
-func (client *DockerClient) ListContainers(logger flamingo.Logger) ([]t.Container, error) {
+func isRunningInDocker() bool {
+	// docker creates a .dockerenv file at the root
+	// of the directory tree inside the container.
+	// if this file exists then the viewer is running
+	// from inside a container so return true
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		return true
+	}
+	return false
+}
+
+func FindLocalNetworks(dockerClient *sdkClient.Client, logger flamingo.Logger) ([]*t.NetworkResource, error) {
+	var foundNetworks []*t.NetworkResource
+	if !isRunningInDocker() {
+		logger.Debug("Looking for local network but not running in Docker")
+		return foundNetworks, nil
+	}
+
+	name, err := os.Hostname()
+	if err != nil {
+		logger.Error(err)
+		return foundNetworks, err
+	}
+	addrs, err := net.LookupHost(name)
+	if err != nil {
+		logger.Error(err)
+		return foundNetworks, err
+	}
+	localIp := addrs[0]
+
+	networks, err := dockerClient.NetworkList(context.Background(), t.NetworkListOptions{})
+	if err != nil {
+		logger.Error(err)
+		return foundNetworks, err
+	}
+	for _, network := range networks {
+		// Network in NetworkList does not have containers attached to it, inspect again
+		nw, _ := dockerClient.NetworkInspect(context.Background(), network.ID, t.NetworkInspectOptions{})
+		for _, c := range nw.Containers {
+			if strings.TrimSuffix(c.IPv4Address, "/24") == localIp {
+				foundNetworks = append(foundNetworks, &nw)
+			}
+		}
+	}
+	return foundNetworks, nil
+}
+
+func ListContainers(logger flamingo.Logger) ([]t.Container, error) {
 	dockerClient, err := sdkClient.NewClientWithOpts(
 		sdkClient.WithAPIVersionNegotiation(),
 	)
@@ -25,11 +73,24 @@ func (client *DockerClient) ListContainers(logger flamingo.Logger) ([]t.Containe
 		logger.Error(err)
 		return nil, err
 	}
+
+	filter := filters.NewArgs(filters.KeyValuePair{Key: "label", Value: "me.saitho.styx.service=1"})
+	// if Styx runs on Docker as well, limit network to the same network as Styx runs on,
+	// as it can not access containers outside its own network
+	ownNetworks, _ := FindLocalNetworks(dockerClient, logger)
+	if len(ownNetworks) > 0 {
+		for _, n := range ownNetworks {
+			filter.Add("network", n.Name)
+		}
+	} else {
+		filter.Add("network", "bridge")
+	}
+
 	logger.Info(fmt.Sprintf("Connected to Docker v%s", dockerClient.ClientVersion()))
 	return dockerClient.ContainerList(
 		context.Background(),
 		container.ListOptions{
-			Filters: filters.NewArgs(filters.KeyValuePair{Key: "label", Value: "me.saitho.styx.service=1"}),
+			Filters: filter,
 		})
 }
 
@@ -37,7 +98,7 @@ func (client *DockerClient) ListContainers(logger flamingo.Logger) ([]t.Containe
 // The container name will be used as service name
 func DiscoverServicesByDocker(logger flamingo.Logger) []*StyxService {
 	var services []*StyxService
-	containers, _ := new(DockerClient).ListContainers(logger)
+	containers, _ := ListContainers(logger)
 	if len(containers) == 0 {
 		logger.Debugf("No tagged containers found")
 		return services

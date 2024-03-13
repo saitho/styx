@@ -51,17 +51,23 @@ See `client` directory for an example in TypeScript using Bun and Elysia.
 ### Service discovery
 
 Services need to implement the Styx REST API. When they do, they can be discovered by Styx when they are on the same Docker network.
-There are two means of discovery.
 
-#### Via environment
+* If Styx runs in Docker, it will look for containers on the same networks
+* If Styx runs outside of Docker, it will look for containers on the *bridge* network (Docker default)
+
+There are two means of discovery: direct reference via environment variable, or automagic discovery via Docker labels
+
+#### Environment variables
 
 The environment variable `STYX_SERVICES` takes a comma-separated list of service names.
 Use the same name as the service can be accessed on the Docker network.
 You may add a port number after the service name if your service does not expose the API to default port 8844.
 
-#### Via Docker labels
+#### Docker labels
 
-All containers on the default Docker bridge network with the following label are discovered if Styx has access to the Docker socket:
+The containers need to be accessible for Styx, i.e. it needs access to the Docker socket.
+
+All container with the following label are discovered automatically:
 ```dockerfile
 LABEL me.saitho.styx.service=1
 ```
