@@ -35,8 +35,8 @@ func (client *DockerClient) ListContainers(logger flamingo.Logger) ([]t.Containe
 
 // DiscoverServicesByDocker looks for running containers with styx label.
 // The container name will be used as service name
-func DiscoverServicesByDocker(logger flamingo.Logger) []StyxService {
-	var services []StyxService
+func DiscoverServicesByDocker(logger flamingo.Logger) []*StyxService {
+	var services []*StyxService
 	containers, _ := new(DockerClient).ListContainers(logger)
 	if len(containers) == 0 {
 		logger.Debugf("No tagged containers found")
@@ -48,17 +48,17 @@ func DiscoverServicesByDocker(logger flamingo.Logger) []StyxService {
 			logger.Debugf("Skip container with image \"%s\" (id %s) as it is not running", t2.Image, t2.ID)
 			continue
 		}
-		logger.Info(fmt.Sprintf("Found tagged running container with image \"%s\" (id %s)", t2.Image, t2.ID))
 		// Only use first name of container
-		// todo: make port configurable via label
+		serviceName := strings.TrimPrefix(t2.Names[0], "/")
+		logger.Info(fmt.Sprintf("Found tagged running container \"%s\" (id %s)", serviceName, t2.ID))
 		for name, network := range t2.NetworkSettings.Networks {
-			// for now only support bridge network which is Docker default
-			if name != "bridge" {
-				continue
+			ipAddress := serviceName
+			if name == "bridge" {
+				ipAddress = network.IPAddress
 			}
-			s := StyxService{
-				ServiceName: strings.TrimPrefix(t2.Names[0], "/"),
-				IpAddress:   network.IPAddress,
+			s := &StyxService{
+				ServiceName: serviceName,
+				IpAddress:   ipAddress,
 			}
 			portFromLabel, ok := t2.Labels["me.saitho.styx.port"]
 			if ok {

@@ -43,11 +43,11 @@ type ConfigModule struct {
 }
 
 // DiscoverServicesByEnvironment evaluates the services from config and prepares service objects
-func DiscoverServicesByEnvironment(config config.Map) []StyxService {
-	var services []StyxService
+func DiscoverServicesByEnvironment(config config.Map) []*StyxService {
+	var services []*StyxService
 	if serviceString, ok := config.Get("services"); serviceString != "" && ok {
 		for _, serviceName := range strings.Split(serviceString.(string), ",") {
-			s := StyxService{ServiceName: serviceName}
+			s := &StyxService{ServiceName: serviceName}
 			if strings.Contains(serviceName, ":") {
 				// if service name contains port number, remove it from service name
 				serviceSplit := strings.Split(serviceName, ":")
@@ -82,10 +82,10 @@ func NewServiceManager(
 	}
 
 	for _, s := range DiscoverServicesByDocker(logger) {
-		prepareService(&s)
+		prepareService(s)
 	}
 	for _, s := range DiscoverServicesByEnvironment(cfg.CompleteConfig) {
-		prepareService(&s)
+		prepareService(s)
 	}
 	return m
 }
