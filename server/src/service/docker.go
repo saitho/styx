@@ -66,6 +66,10 @@ func FindLocalNetworks(dockerClient *sdkClient.Client, logger flamingo.Logger) (
 }
 
 func ListContainers(logger flamingo.Logger) ([]t.Container, error) {
+	if _, err := os.Stat("/var/run/docker.sock"); err != nil {
+		logger.Warn("Docker features not available as no Docker socket exists.")
+		return nil, nil
+	}
 	dockerClient, err := sdkClient.NewClientWithOpts(
 		sdkClient.WithAPIVersionNegotiation(),
 	)

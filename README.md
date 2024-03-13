@@ -78,3 +78,13 @@ LABEL me.saitho.styx.port=8843
 ```
 
 *Nice to know:* Styx accesses the internal IP address, so there is no need to actually EXPOSE the port.
+
+## Try
+
+There are two setups available for testing:
+
+Configuration via environment: `docker compose up backend-environment`
+Then, open http://localhost:3322
+
+Configuration via Docker Labels: `docker compose up backend-labels`
+Then, open http://localhost:3322

@@ -1,21 +1,38 @@
 ---
 services:
+  # Default settings
   frontend1:
     build: client
-    labels:
-      - me.saitho.styx.port=8843
+  # Change port to 8843
   frontend2:
     build: client
     labels:
-      - me.saitho.styx.port=8844
+      - me.saitho.styx.port=8843
     environment:
-      PORT: 8844
-  backend:
+      PORT: 8843
+
+  # Backend variant: Configuration via environment
+  backend-environment:
     build: server
     ports:
+      # Web UI is available here
       - 3322:3322
     depends_on:
       - frontend1
       - frontend2
+    # If Docker socket is not available, it can be registered via environment variables instead
+    environment:
+      STYX_SERVICES: frontend1,frontend2:8843
+
+  # Backend variant: Configuration via Docker labels
+  backend-labels:
+    build: server
+    ports:
+      # Web UI is available here
+      - 3322:3322
+    depends_on:
+      - frontend1
+      - frontend2
+    # Access to Docker socket so container discovery works
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
