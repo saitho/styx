@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 
 	"flamingo.me/dingo"
@@ -46,11 +47,17 @@ func DiscoverServicesByEnvironment(config config.Map) []StyxService {
 	var services []StyxService
 	if serviceString, ok := config.Get("services"); serviceString != "" && ok {
 		for _, serviceName := range strings.Split(serviceString.(string), ",") {
+			s := StyxService{ServiceName: serviceName}
 			if strings.Contains(serviceName, ":") {
 				// if service name contains port number, remove it from service name
-				serviceName = strings.Split(serviceName, ":")[0]
+				serviceSplit := strings.Split(serviceName, ":")
+				s.ServiceName = serviceSplit[0]
+				if portNumber, err := strconv.Atoi(serviceSplit[1]); err == nil {
+					s.Port = portNumber
+				}
 			}
-			services = append(services, StyxService{ServiceName: serviceName, IpAddress: serviceName})
+			s.IpAddress = s.ServiceName
+			services = append(services, s)
 		}
 	}
 	return services
