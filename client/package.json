@@ -9,6 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "await-event-emitter": "^2.0.2",
     "elysia": "^0.8.16"
   },
   "scripts": {

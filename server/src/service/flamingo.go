@@ -2,16 +2,39 @@ package service
 
 import (
 	"context"
-	"flamingo.me/flamingo/v3/framework/config"
+	"fmt"
+	"slices"
 	"strings"
 
 	"flamingo.me/dingo"
+	"flamingo.me/flamingo/v3/framework/config"
 	"flamingo.me/flamingo/v3/framework/flamingo"
 	"flamingo.me/flamingo/v3/framework/web"
 )
 
 type ServiceManager struct {
 	Services map[string]*StyxService
+	logger   flamingo.Logger
+}
+
+func (m *ServiceManager) Inject(logger flamingo.Logger) {
+	m.logger = logger
+}
+
+func (m *ServiceManager) EmitEvent(eventName string, event interface{}) error {
+	if len(m.Services) == 0 {
+		return fmt.Errorf("no services defined")
+	}
+	for _, service := range m.Services {
+		if !slices.Contains(service.Config.SubscribedEvents, eventName) {
+			continue
+		}
+		m.logger.Info(fmt.Sprintf("Emitting event %s to %s", eventName, service.ServiceName))
+		if err := service.EmitEvent(eventName, event); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type ConfigModule struct {
@@ -20,12 +43,12 @@ type ConfigModule struct {
 
 func NewServiceManager(
 	logger flamingo.Logger,
-	eventManager *ServiceEventManager,
 	cfg *struct {
 		CompleteConfig config.Map `inject:"config:styx"`
 	},
 ) *ServiceManager {
 	m := &ServiceManager{}
+	m.Inject(logger)
 	m.Services = map[string]*StyxService{}
 	if serviceString, ok := cfg.CompleteConfig.Get("services"); serviceString != "" && ok {
 		for _, serviceName := range strings.Split(serviceString.(string), ",") {
@@ -34,7 +57,7 @@ func NewServiceManager(
 				serviceName = strings.Split(serviceName, ":")[0]
 			}
 			service := &StyxService{ServiceName: serviceName}
-			service.Inject(logger, eventManager)
+			service.Inject(logger)
 			if err := service.Init(); err != nil {
 				logger.Error(err)
 			}
