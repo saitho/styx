@@ -41,6 +41,21 @@ type ConfigModule struct {
 	injector *dingo.Injector
 }
 
+// DiscoverServicesByEnvironment evaluates the services from config and prepares service objects
+func DiscoverServicesByEnvironment(config config.Map) []StyxService {
+	var services []StyxService
+	if serviceString, ok := config.Get("services"); serviceString != "" && ok {
+		for _, serviceName := range strings.Split(serviceString.(string), ",") {
+			if strings.Contains(serviceName, ":") {
+				// if service name contains port number, remove it from service name
+				serviceName = strings.Split(serviceName, ":")[0]
+			}
+			services = append(services, StyxService{ServiceName: serviceName, IpAddress: serviceName})
+		}
+	}
+	return services
+}
+
 func NewServiceManager(
 	logger flamingo.Logger,
 	cfg *struct {
@@ -50,19 +65,20 @@ func NewServiceManager(
 	m := &ServiceManager{}
 	m.Inject(logger)
 	m.Services = map[string]*StyxService{}
-	if serviceString, ok := cfg.CompleteConfig.Get("services"); serviceString != "" && ok {
-		for _, serviceName := range strings.Split(serviceString.(string), ",") {
-			if strings.Contains(serviceName, ":") {
-				// if service name contains port number, remove it from service name
-				serviceName = strings.Split(serviceName, ":")[0]
-			}
-			service := &StyxService{ServiceName: serviceName}
-			service.Inject(logger)
-			if err := service.Init(); err != nil {
-				logger.Error(err)
-			}
-			m.Services[serviceName] = service
+
+	prepareService := func(s *StyxService) {
+		s.Inject(logger)
+		if err := s.Init(); err != nil {
+			logger.Error(err)
 		}
+		m.Services[s.ServiceName] = s
+	}
+
+	for _, s := range DiscoverServicesByDocker(logger) {
+		prepareService(&s)
+	}
+	for _, s := range DiscoverServicesByEnvironment(cfg.CompleteConfig) {
+		prepareService(&s)
 	}
 	return m
 }
@@ -78,7 +94,7 @@ func (m *Module) Configure(injector *dingo.Injector) {
 
 // routes struct - our internal struct that gets the interface methods for router.Module
 type routes struct {
-	// controller - we will defined routes that are handled by our HelloController - so we need this as a dependency
+	// controller - we will define routes that are handled by our HelloController - so we need this as a dependency
 	controller     *Controller
 	serviceManager *ServiceManager
 }

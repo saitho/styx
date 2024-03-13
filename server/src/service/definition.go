@@ -21,6 +21,7 @@ const (
 
 type StyxService struct {
 	ServiceName string
+	IpAddress   string
 	Version     string
 	Config      *StyxServiceConfig
 
@@ -39,10 +40,10 @@ func (m *StyxService) CallEndpoint(endpoint string, ignoreStatusCode bool) (*htt
 	if endpoint != "status" {
 		// perform status ping if needed
 		if m.pingStatus() != StatusReady {
-			return nil, fmt.Errorf("service \"%s\" status is not ready")
+			return nil, fmt.Errorf("service \"%s\" status is not ready", m.ServiceName)
 		}
 	}
-	resp, err := http.Get(fmt.Sprintf("http://%s:8844/_styx/%s", m.ServiceName, endpoint))
+	resp, err := http.Get(fmt.Sprintf("http://%s:8844/_styx/%s", m.IpAddress, endpoint))
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to service \"%s\" endpoint \"%s\"", m.ServiceName, endpoint)
 	}
@@ -66,7 +67,7 @@ func (m *StyxService) EmitEvent(eventName string, data interface{}) error {
 	if err != nil {
 		return fmt.Errorf("unable to marshal event data")
 	}
-	resp, err := http.Post("http://%s:8844/_styx/event", "application/json", bytes.NewBuffer(bytesData))
+	resp, err := http.Post(fmt.Sprintf("http://%s:8844/_styx/event", m.IpAddress), "application/json", bytes.NewBuffer(bytesData))
 	if err != nil {
 		return fmt.Errorf("unable to connect to events endpoint on service \"%s\"", m.ServiceName)
 	}
