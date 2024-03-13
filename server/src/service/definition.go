@@ -22,6 +22,7 @@ const (
 type StyxService struct {
 	ServiceName string
 	IpAddress   string
+	Port        int
 	Version     string
 	Config      *StyxServiceConfig
 
@@ -43,7 +44,7 @@ func (m *StyxService) CallEndpoint(endpoint string, ignoreStatusCode bool) (*htt
 			return nil, fmt.Errorf("service \"%s\" status is not ready", m.ServiceName)
 		}
 	}
-	resp, err := http.Get(fmt.Sprintf("http://%s:8844/_styx/%s", m.IpAddress, endpoint))
+	resp, err := http.Get(fmt.Sprintf("http://%s:%d/_styx/%s", m.IpAddress, m.Port, endpoint))
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to service \"%s\" endpoint \"%s\"", m.ServiceName, endpoint)
 	}
@@ -105,6 +106,9 @@ func StatusText(status Status) string {
 
 func (m *StyxService) Init() error {
 	m.logger.Info("Initializing service \"" + m.ServiceName + "\"")
+	if m.Port == 0 {
+		m.Port = 8844 // set default port
+	}
 	resp, err := m.CallEndpoint("init", false)
 	if err != nil {
 		m.updateStatus(StatusHttpError)

@@ -6,10 +6,11 @@ eventEmitter.addListener('test:test', (data: any) => {
     console.log(data)
 })
 
-console.log('Launching Web server at port ' + STYX_PORT)
+const port = process.env.PORT || STYX_PORT
+console.log('Launching Web server at port ' + port)
 new Elysia()
     .use(styx({
         version: "2",
         subscribedEvents: ['test:test']
     }))
-    .listen(STYX_PORT)
+    .listen(port)

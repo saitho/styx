@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"flamingo.me/flamingo/v3/framework/flamingo"
@@ -55,10 +56,17 @@ func DiscoverServicesByDocker(logger flamingo.Logger) []StyxService {
 			if name != "bridge" {
 				continue
 			}
-			services = append(services, StyxService{
+			s := StyxService{
 				ServiceName: strings.TrimPrefix(t2.Names[0], "/"),
 				IpAddress:   network.IPAddress,
-			})
+			}
+			portFromLabel, ok := t2.Labels["me.saitho.styx.port"]
+			if ok {
+				if portNumber, err := strconv.Atoi(portFromLabel); err == nil {
+					s.Port = portNumber
+				}
+			}
+			services = append(services, s)
 		}
 	}
 	return services
