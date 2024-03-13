@@ -5,7 +5,6 @@ block content
     h3 Configured services
     ul
         each s in data("serviceManager").services
-            li(data-service-name=s.serviceName) #{s.serviceName}
+            li(data-service-name=s.serviceName) #{s.serviceName} (Version: #{s.version || "N/A"})
                 span(title=s.lastStatusDate)  | Status: #{s.lastStatusReadable}
-                span(title=s.lastRpcStatusDate)  | Status RPC: #{s.lastRpcStatusReadable}
-                a(role="button") Refresh TBD
+                a(role="button" class="small" style="margin-left: 1rem") Reinitialize
