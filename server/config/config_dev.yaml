@@ -1,5 +1,8 @@
 flamingo.debug.mode: true
 
+styx:
+  services: '%%ENV:STYX_SERVICES%%'
+
 core:
   zap:
     loglevel: Debug

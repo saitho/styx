@@ -8,6 +8,7 @@ RUN go build
 FROM alpine:3
 WORKDIR /app
 COPY --from=builder /build/styx-app /app/styx-app
+COPY --from=builder /build/config /app/config
 COPY --from=builder /build/frontend/dist /app/frontend/dist
 EXPOSE 3322
 CMD ["/app/styx-app", "serve"]

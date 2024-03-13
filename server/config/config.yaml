@@ -2,8 +2,6 @@ flamingo.debug.mode: false
 
 styx:
   services: '%%ENV:STYX_SERVICES%%'
-  grpc:
-    port: 50051
 
 core:
   zap:
